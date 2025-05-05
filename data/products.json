@@ -1,0 +1,46 @@
+[
+  {
+    "title": "Producto de prueba",
+    "description": "Descripcion de prueba 3",
+    "code": "codigo8",
+    "price": 9000,
+    "status": true,
+    "stock": 100,
+    "category": "categoria de Prueba",
+    "thumbnail": "imgPrueba.jpg",
+    "id": 1
+  },
+  {
+    "title": "Producto de prueba 2",
+    "description": "Descripcion de prueba 2",
+    "code": "codigo6",
+    "price": 5000,
+    "status": false,
+    "stock": 10,
+    "category": "categoria de Prueba 2",
+    "thumbnail": "imgPrueba2.jpg",
+    "id": 2
+  },
+  {
+    "title": "Celular Samsung",
+    "description": "128 Gb Rom 6 Gb Ram",
+    "code": "Sam1",
+    "price": 500000,
+    "status": false,
+    "stock": 10,
+    "category": "Celulares",
+    "thumbnail": "imgCelularSamsung.jpg",
+    "id": 4
+  },
+  {
+    "title": "Aspiradora Philco",
+    "description": "Con bolsa y cable de hasta 15 metros",
+    "code": "Phi4",
+    "price": 350000,
+    "status": true,
+    "stock": 30,
+    "category": "Aspiradora",
+    "thumbnail": "imgAspiradoraPhilco.jpg",
+    "id": 5
+  }
+]
