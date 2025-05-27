@@ -1,117 +1,93 @@
-// const fs = require('fs');
-
-// class ProductManager {
-//     constructor(path) {
-//         this.path = path;
-//     }
-
-//     //Llamado de todos los productos
-//     getProducts() {
-//         try {
-//             const data = fs.readFileSync(this.path, 'utf-8');
-//             return JSON.parse(data);
-//         } catch (error) {
-//             console.error('Error al leer el archivo:', error);
-//             return [];
-//         }
-//     }
-
-//     //Llamado de un producto por su id
-//     getProductById(id) {
-//         const products = this.getProducts();
-//         return products.find(product => product.id === id) || null;
-//     }
-
-//     //Agregar un producto al carrito
-//     addProduct(product) {
-//         const products = this.getProducts();
-//         product.id = products.length ? products[products.length - 1].id + 1 : 1;
-//         products.push(product);
-//         fs.writeFileSync(this.path, JSON.stringify(products, null, 2));
-//         return product;
-//     }
-
-//     //Actualizar un producto por su id
-//     updateProduct(id, updatedFields) {
-//         const products = this.getProducts();
-//         const index = products.findIndex(product => product.id === id);
-
-//         if (index !== -1) {
-//             products[index] = { ...products[index], ...updatedFields };
-//             fs.writeFileSync(this.path, JSON.stringify(products, null, 2));
-//             return products[index];
-//         }
-//         return null;
-//     }
-
-//     //Eliminar un producto por su id
-//     deleteProduct(id) {
-//         let products = this.getProducts();
-//         products = products.filter(product => product.id !== id);
-//         fs.writeFileSync(this.path, JSON.stringify(products, null, 2));
-//         return { message: 'Producto eliminado' };
-//     }
-
-// }
-
-// module.exports = ProductManager;
-
 import fs from 'fs/promises';
 import path from 'path';
+
 class ProductManager {
-    constructor(path){
-        this.path = path;
+    constructor() {
+        this.path = path.resolve('./data/products.json');
     }
 
-    //Llamado de todos los productos
-    async getProducts(){
+    async getProducts() {
         try {
             const data = await fs.readFile(this.path, 'utf-8');
             return data.trim() ? JSON.parse(data) : [];
         } catch (error) {
             console.error("Error al leer el archivo:", error);
-            await fs.writeFile(this.path, JSON.stringify([]));
             return [];
         }
     }
 
-    //Llamado de un producto por su id
-    async getProductById(id){
-        const products = await this.getProducts();
-        return products.find(product => product.id === id) || null;
-    }
-
-    //Agregar un producto al carrito
-    async addProduct(product){
-        const products = await this.getProducts();
-        product.id = products.length ? products[products.length - 1].id + 1 : 1;
-        products.push(product);
-        await fs.writeFile(this.path, JSON.stringify(products, null, 2));
-        return product;
-    }
-
-    //Actualizar un producto por su id
-    async updateProduct(id, updatedFields){
-        const products = await this.getProducts();
-        const index = products.findIndex(product => product.id === id);
-
-        if (index !== -1) {
-            products[index] = { ...products[index], ...updatedFields };
-            await fs.writeFile(this.path, JSON.stringify(products, null, 2));
-            return products[index];
+    async getProductById(id) {
+        try {
+            const products = await this.getProducts();
+            return products.find(product => product.id === id) || null;
+        } catch (error) {
+            console.error("Error al obtener producto por ID:", error);
+            return null;
         }
-        return null;
     }
 
-    //Eliminar un producto por su id
-    async deleteProduct(id){
-        let products = await this.getProducts();
-        const newProducts = products.filter(product => product.id !== id);
-        if (newProducts.length === products.length) {
-            return { error: 'Producto no encontrado' };        
+    async addProduct(product) {
+        try {
+            // Validaciones
+            if (
+                !product.title || typeof product.title !== 'string' ||
+                !product.code || typeof product.code !== 'string' ||
+                !product.category || typeof product.category !== 'string' ||
+                isNaN(product.price) || isNaN(product.stock)
+            ) {
+                return { error: "Datos inválidos. Verifica title, code, category, price y stock." };
+            }
+
+            const products = await this.getProducts();
+
+            // Validar código único
+            const exists = products.some(p => p.code === product.code);
+            if (exists) return { error: "Ya existe un producto con ese código." };
+
+            product.id = products.length ? products[products.length - 1].id + 1 : 1;
+            products.push(product);
+
+            await fs.writeFile(this.path, JSON.stringify(products, null, 2));
+            return product;
+        } catch (error) {
+            console.error("Error al agregar producto:", error);
+            return { error: "Error interno del servidor." };
+        }
     }
-    await fs.writeFile(this.path, JSON.stringify(newProducts, null, 2));
-        return { message: 'Producto eliminado' };
+
+    async updateProduct(id, updatedFields) {
+        try {
+            const products = await this.getProducts();
+            const index = products.findIndex(product => product.id === id);
+
+            if (index !== -1) {
+                products[index] = { ...products[index], ...updatedFields };
+                await fs.writeFile(this.path, JSON.stringify(products, null, 2));
+                return products[index];
+            }
+
+            return { error: "Producto no encontrado." };
+        } catch (error) {
+            console.error("Error al actualizar producto:", error);
+            return { error: "Error interno del servidor." };
+        }
+    }
+
+    async deleteProduct(id) {
+        try {
+            let products = await this.getProducts();
+            const newProducts = products.filter(product => product.id !== id);
+
+            if (newProducts.length === products.length) {
+                return { error: "Producto no encontrado." };
+            }
+
+            await fs.writeFile(this.path, JSON.stringify(newProducts, null, 2));
+            return { message: "Producto eliminado." };
+        } catch (error) {
+            console.error("Error al eliminar producto:", error);
+            return { error: "Error interno del servidor." };
+        }
     }
 }
 
