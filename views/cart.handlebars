@@ -1,0 +1,13 @@
+<h1>Mi Carrito</h1>
+<ul>
+  {{#each cart.products}}
+    <li>
+      <strong>{{this.product.title}}</strong> - Cantidad: {{this.quantity}}<br>
+      Precio unitario: ${{this.product.price}}<br>
+      Subtotal: ${{multiply this.quantity this.product.price}}
+    </li>
+    <hr>
+  {{/each}}
+</ul>
+
+<a href="/products">← Volver a productos</a>

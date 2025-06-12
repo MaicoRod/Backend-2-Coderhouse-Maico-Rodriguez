@@ -1,54 +1,49 @@
 import CartService from '../services/CartService.js';
-
 const cartService = new CartService();
 
-export const getCarts = async (req, res) => {
-    try {
-        const carts = await cartService.getCarts();
-        res.status(200).json(carts);
-    } catch (error) {
-        console.error("Error al obtener carritos:", error);
-        res.status(500).json({ error: "Error interno del servidor" });
-    }
+export const createCart = async (req, res) => {
+  const result = await cartService.createCart();
+  res.status(201).json(result);
 };
 
 export const getCartById = async (req, res) => {
-    try {
-        const cartId = Number(req.params.cid);
-        if (isNaN(cartId)) {
-            return res.status(400).json({ error: "ID inválido, debe ser un número." });
-        }
-
-        const cart = await cartService.getCartById(cartId);
-        cart ? res.json(cart) : res.status(404).json({ error: "El carrito no existe." });
-    } catch (error) {
-        console.error("Error al obtener carrito:", error);
-        res.status(500).json({ error: "Error interno del servidor" });
-    }
-};
-
-export const createCart = async (req, res) => {
-    try {
-        const newCart = await cartService.createCart();
-        res.status(201).json(newCart);
-    } catch (error) {
-        console.error("Error al crear carrito:", error);
-        res.status(500).json({ error: "Error interno del servidor" });
-    }
+  const result = await cartService.getCartById(req.params.cid);
+  result
+    ? res.json(result)
+    : res.status(404).json({ error: 'Carrito no encontrado' });
 };
 
 export const addProductToCart = async (req, res) => {
     try {
-        const cartId = Number(req.params.cid);
-        const productId = Number(req.params.pid);
-        if (isNaN(cartId) || isNaN(productId)) {
-            return res.status(400).json({ error: "IDs inválidos, deben ser números." });
-        }
+        const { cid, pid } = req.params; // Capturar los parámetros correctamente
+        const updatedCart = await cartService.addProductToCart(cid, pid);
 
-        const result = await cartService.addProductToCart(cartId, productId);
-        result.error ? res.status(404).json(result) : res.json(result);
+        updatedCart.error
+            ? res.status(404).json(updatedCart)
+            : res.json(updatedCart);
     } catch (error) {
         console.error("Error al agregar producto al carrito:", error);
-        res.status(500).json({ error: "Error interno del servidor" });
+        res.status(500).json({ error: "Error interno del servidor." });
     }
 };
+
+export const deleteProductFromCart = async (req, res) => {
+  const result = await cartService.deleteProductFromCart(req.params.cid, req.params.pid);
+  res.json(result);
+};
+
+export const updateCartProducts = async (req, res) => {
+  const result = await cartService.updateCartProducts(req.params.cid, req.body.products);
+  res.json(result);
+};
+
+export const updateProductQuantity = async (req, res) => {
+  const result = await cartService.updateProductQuantity(req.params.cid, req.params.pid, req.body.quantity);
+  res.json(result);
+};
+
+export const deleteAllProductsFromCart = async (req, res) => {
+  const result = await cartService.deleteAllProductsFromCart(req.params.cid);
+  res.json(result);
+};
+

@@ -1,16 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Lista de Productos</title>
-    <link rel="stylesheet" href="/src/public/css/style.css">
-</head>
-<body>
-    <h1>Lista de Productos</h1>
-    <ul>
-        {{#each products}}
-            <li>{{this.title}} - ${{this.price}}</li>
-        {{/each}}
-    </ul>
-</body>
-</html>
+<h2>Productos Destacados</h2>
+<ul>
+    {{#each featuredProducts}}
+        <li>
+            <a href="/products/{{this._id}}">{{this.title}}</a> - ${{this.price}}
+        </li>
+    {{/each}}
+</ul>
