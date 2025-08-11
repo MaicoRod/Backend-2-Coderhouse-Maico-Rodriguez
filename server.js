@@ -1,16 +1,19 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import passport from 'passport'; //Backend 2
+import { initPassport } from './config/passport.config.js'; //Backend 2
 import { engine } from 'express-handlebars';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
 import productsRouter from './routes/productsRouter.js';
 import cartsRouter from './routes/cartsRouter.js';
 import viewsRouter from './routes/viewsRouter.js';
+import usersRouter from './routes/usersRouter.js'; // Backend 2
+import sessionsRouter from './routes/sessionsRouter.js'; // Backend 2
 import ProductService from './services/ProductService.js';
 import './helpers/handlebars.js';
 
@@ -51,7 +54,7 @@ app.use('/', viewsRouter);
 
 // WebSockets
 io.on('connection', async (socket) => {
-    console.log('🟢 Cliente conectado');
+    console.log('Cliente conectado');
     const result = await productService.getProducts({});
     socket.emit('updateProducts', result?.docs ?? result ?? []);
 
@@ -73,9 +76,20 @@ const PORT = process.env.PORT || 8080;
 const MONGO_URL = process.env.MONGO_URL;
 mongoose.connect(MONGO_URL)
   .then(() => {
-    console.log('🟢 Conectado a MongoDB');
+    console.log('Conectado a MongoDB');
     httpServer.listen(PORT, () =>
-      console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`)
+      console.log(`Servidor corriendo en http://localhost:${PORT}`)
     );
   })
-  .catch(err => console.error('❌ Error al conectar con MongoDB:', err));
+  .catch(err => console.error('Error al conectar con MongoDB:', err));
+
+  //Proyecto Backend 2
+
+initPassport(); //Backend 2
+
+  app.use(passport.initialize());
+
+  app.use('/api/users', usersRouter);
+  app.use('/api/sessions', sessionsRouter);
+
+
