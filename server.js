@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import passport from 'passport'; //Backend 2
 import { initPassport } from './config/passport.config.js'; //Backend 2
 import { engine } from 'express-handlebars';
@@ -84,12 +85,13 @@ mongoose.connect(MONGO_URL)
   .catch(err => console.error('Error al conectar con MongoDB:', err));
 
   //Proyecto Backend 2
+app.use(cookieParser());
 
 initPassport(); //Backend 2
 
-  app.use(passport.initialize());
+app.use(passport.initialize());
 
-  app.use('/api/users', usersRouter);
-  app.use('/api/sessions', sessionsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/sessions', sessionsRouter);
 
 
