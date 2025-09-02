@@ -48,10 +48,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Rutas
-app.use('/api/products', productsRouter);
-app.use('/api/carts', cartsRouter);
-app.use('/', viewsRouter);
 
 // WebSockets
 io.on('connection', async (socket) => {
@@ -91,7 +87,10 @@ initPassport(); //Backend 2
 
 app.use(passport.initialize());
 
+// Rutas
 app.use('/api/users', usersRouter);
 app.use('/api/sessions', sessionsRouter);
-
+app.use('/api/products', productsRouter);
+app.use('/api/carts', cartsRouter);
+app.use('/', viewsRouter);
 

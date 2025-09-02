@@ -1,4 +1,5 @@
-import express from 'express';
+import { Router } from 'express';
+import { requireAuth, requireRole, cartAccess } from '../middlewares/auth.js';
 import {
     createCart,
     getCartById,
@@ -6,18 +7,26 @@ import {
     deleteProductFromCart,
     updateCartProducts,
     updateProductQuantity,
-    deleteAllProductsFromCart
+    deleteAllProductsFromCart, purchase
 } from '../controllers/cartsController.js';
 
-const router = express.Router();
+const router = Router();
 
-router.post('/', createCart);
-router.get('/:cid', getCartById);
-router.post('/:cid/products/:pid', addProductToCart);
-router.delete('/:cid/products/:pid', deleteProductFromCart);
-router.put('/:cid', updateCartProducts);
-router.put('/:cid/products/:pid', updateProductQuantity);
-router.delete('/:cid', deleteAllProductsFromCart);
+router.post('/', requireAuth, createCart);
+
+router.get('/:cid', requireAuth, cartAccess(), getCartById);
+
+router.post('/:cid/products/:pid', requireAuth, requireRole('user'), cartAccess(), addProductToCart);
+
+router.delete('/:cid/products/:pid', requireAuth, cartAccess(), deleteProductFromCart);
+
+router.put('/:cid', requireAuth, cartAccess(), updateCartProducts);
+
+router.put('/:cid/products/:pid', requireAuth, cartAccess(), updateProductQuantity);
+
+router.delete('/:cid', requireAuth, cartAccess(), deleteAllProductsFromCart);
+
+router.post('/:cid/purchase', requireAuth, requireRole('user'), cartAccess(), purchase);
 
 export default router;
 

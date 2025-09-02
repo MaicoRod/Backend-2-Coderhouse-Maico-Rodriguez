@@ -1,4 +1,5 @@
-import express from 'express';
+import { Router } from 'express';
+import { requireAuth , requireRole } from '../middlewares/auth.js';
 import {
   getProducts,
   getProductById,
@@ -7,13 +8,15 @@ import {
   deleteProduct
 } from '../controllers/productsController.js';
 
-const router = express.Router();
+const router = Router();
 
 router.get('/', getProducts);
 router.get('/:pid', getProductById);
-router.post('/', addProduct);
-router.put('/:pid', updateProduct);
-router.delete('/:pid', deleteProduct);
+
+
+router.post('/', requireAuth, requireRole('admin'), addProduct);
+router.put('/:pid', requireAuth, requireRole('admin'), updateProduct);
+router.delete('/:pid', requireAuth, requireRole('admin'), deleteProduct);
 
 export default router;
 
