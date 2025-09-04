@@ -3,6 +3,7 @@ dotenv.config();
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import passport from 'passport'; //Backend 2
+import config from './config/config.js';
 import { initPassport } from './config/passport.config.js'; //Backend 2
 import { engine } from 'express-handlebars';
 import { createServer } from 'http';
@@ -15,7 +16,7 @@ import cartsRouter from './routes/cartsRouter.js';
 import viewsRouter from './routes/viewsRouter.js';
 import usersRouter from './routes/usersRouter.js'; // Backend 2
 import sessionsRouter from './routes/sessionsRouter.js'; // Backend 2
-import ProductService from './services/ProductService.js';
+import ProductService from './services/productService.js';
 import './helpers/handlebars.js';
 
 
@@ -69,8 +70,8 @@ io.on('connection', async (socket) => {
 });
 
 // MongoDB
-const PORT = process.env.PORT || 8080;
-const MONGO_URL = process.env.MONGO_URL;
+const PORT = config.PORT || 8080;
+const MONGO_URL = config.MONGO_URL;
 mongoose.connect(MONGO_URL)
   .then(() => {
     console.log('Conectado a MongoDB');

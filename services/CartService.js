@@ -105,25 +105,49 @@ async getAnyCart() {
   }
 
   async updateProductQuantity(cid, pid, qty) {
-    try {
-      if (!Number.isInteger(qty) || qty < 1) {
-        return { error: 'La cantidad debe ser un número mayor a 0.' };
-      }
-
-      const cart = await CartModel.findById(cid);
-      if (!cart) return { error: 'Carrito no encontrado.' };
-
-      const product = cart.products.find(p => p.product.toString() === pid);
-      if (!product) return { error: 'Producto no encontrado en el carrito.' };
-
-      product.quantity = qty;
-      const updatedCart = await cart.save();
-      return { success: true, cart: updatedCart };
-    } catch (error) {
-      console.error('Error al actualizar la cantidad del producto:', error);
-      return { error: 'Error interno del servidor.' };
+  try {
+    // Validaciones básicas
+    if (!Number.isInteger(qty) || qty < 1) {
+      return { error: 'La cantidad debe ser un número mayor a 0.' };
     }
+
+    const cart = await CartModel.findById(cid);
+    if (!cart) return { error: 'Carrito no encontrado.' };
+
+    const item = cart.products.find(p => p.product.toString() === pid);
+    if (!item) return { error: 'Producto no encontrado en el carrito.' };
+
+    const product = await ProductModel.findById(pid);
+    if (!product) return { error: 'Producto no encontrado.' };
+
+    // delta = cuánto cambia la cantidad en el carrito
+    const delta = qty - item.quantity;
+
+    if (delta > 0) {
+      // Necesitamos MÁS unidades -> debe haber stock suficiente
+      if (product.stock < delta) {
+        return { error: 'Stock insuficiente para actualizar la cantidad.', code: 409 };
+      }
+      product.stock -= delta;
+    } else if (delta < 0) {
+      // Devolvemos unidades al stock
+      product.stock += Math.abs(delta);
+    }
+
+    // Aplicamos la nueva cantidad en el carrito
+    item.quantity = qty;
+
+    // Guardamos primero el producto (stock), luego el carrito
+    await product.save();
+    const updatedCart = await cart.save();
+
+    return { success: true, cart: updatedCart };
+  } catch (error) {
+    console.error('Error al actualizar la cantidad del producto:', error);
+    return { error: 'Error interno del servidor.' };
   }
+}
+
 
   async deleteAllProductsFromCart(cid) {
     try {

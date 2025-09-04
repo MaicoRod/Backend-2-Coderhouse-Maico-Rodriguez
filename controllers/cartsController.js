@@ -100,7 +100,7 @@ export const purchase = async (req, res) => {
         totalAmount += prod.price * qty;
         purchasedIds.push(prod._id.toString());
       } else {
-        failedIds.push(prod._id.toString());
+        failedIds.push({id: prod._id.toString(), reason:'Stock insuficiente'});
       }
     }
 

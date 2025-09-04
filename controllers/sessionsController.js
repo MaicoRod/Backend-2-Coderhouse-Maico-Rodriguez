@@ -47,7 +47,6 @@ export const recover = async (req, res) => {
             { expiresIn: '1h' }
         );
         const link = `${config.BASE_URL}/api/sessions/reset-password?token=${token}`;
-        console.log('🔗 Enlace de recuperación generado:', link);
         await sendPasswordReset(email, link);
     }
 
@@ -67,8 +66,6 @@ export const resetPassword = async (req, res) => {
     }
 
     try {
-        console.log('Token recibido:', `"${token}"`);
-        console.log('JWT_SECRET usado:', `"${config.JWT_SECRET}"`);
         const payload = jwt.verify(token, config.JWT_SECRET);
         if (payload.type !== 'pwdReset') {
             return res.status(400).json({ error: 'Token inválido' });

@@ -1,4 +1,5 @@
 import passport from 'passport';
+import config from './config.js';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
 import { Strategy as LocalStrategy } from 'passport-local';
 import UserModel from '../models/UserModel.js';
@@ -8,7 +9,7 @@ const SALT_ROUNDS = 10;
 
 const cookieExtractor = (req) => {
     if (!req || !req.cookies) return null;
-    return req.cookies[process.env.COOKIE_NAME || 'cookieToken'] || null;
+    return req.cookies[config.COOKIE_NAME || 'cookieToken'] || null;
 };
 
 export const initPassport = () => {
@@ -56,7 +57,7 @@ passport.use('login',
     )
 );
 
-const secret = process.env.JWT_SECRET;
+const secret = config.JWT_SECRET;
 if (!secret) throw new Error('JWT_SECRET es requerido');
 
 passport.use('jwt',
