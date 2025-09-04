@@ -1,84 +1,56 @@
 import bcrypt from 'bcrypt';
-import UserModel from '../models/UserModel.js';
+import UserRepository from '../repositories/user.repository.js';
 
 const SALT_ROUNDS = 10;
 
-class UserService {
+export default class UserService {
+    constructor() {
+        this.repository = new UserRepository();
+    }
+
     async createUser(data) {
         try {
-            const exist = await UserModel.findOne({email: data.email});
-            if (exist) return { error:'Este email ya se encuentra registrado'};
+            const exist = await this.repository.findByEmail(data.email);
+            if (exist) {
+                return { error: 'El email ya está registrado' };
+            }
 
-            if (!data.password) return {error:'Ingrese la contraseña'}
+            const hashedPassword = bcrypt.hashSync(data.password, SALT_ROUNDS);
 
-            const hashed = bcrypt.hashSync(data.password, SALT_ROUNDS);
-            const user = await UserModel.create({...data, password: hashed});
+            const user = await this.repository.create({
+                ...data,
+                password: hashedPassword,
+            });
+
             return user;
-            
-        } catch (error) {
-            console.error('Error al crear el usuario:', error)
-            return {error:'Error interno en el servidor'}
+        } catch (err) {
+            console.error('Error al crear usuario:', err);
+            return { error: 'Error al crear usuario' };
         }
     }
-    
-   
-    async getUsers({ page = 1, limit = 10}) {
-        try {
-            const p = parseInt(page), l = parseInt(limit);
-            const [docs, total] = await Promise.all([UserModel.find().skip((p-1)*l).limit(l).lean(), UserModel.countDocuments()]);
-            return { docs, total, page: p, limit: l};
-        } catch (error) {
-            console.error('Error al obtener los usuarios:', error);
-            return {error:'Error interno del servidor'};
-        }
+
+    async getByEmail(email) {
+        return await this.repository.findByEmail(email);
     }
 
     async getUserById(id) {
-        try {
-            const user = await UserModel.findById(id).lean();
-            return user || null;
-        } catch (error) {
-            console.error('Error al obtener el usuario:', error);
-            return { error:'Error interno del servidor'};
-        }
+        return await this.repository.findById(id);
     }
 
-    async updateUser(id, data){
-        try {
-            const toUpdate = {...data};
-            if (data.password){
-                toUpdate.password = bcrypt.hashSync(data.password, SALT_ROUNDS);
-            }
-            const updated = await UserModel.findByIdAndUpdate(id, toUpdate, {new: true}).lean();
-            return updated || null;
-        } catch (error) {
-            console.error('Error al actualizar el usuario:', error);
-            return { error:'Error interno del servidor'};
-        }
+    async updateUser(id, data) {
+        return await this.repository.updateById(id, data);
     }
 
-    async deleteUser (id) {
-        try {
-            const deleted = await  UserModel.findByIdAndDelete(id).lean();
-            return deleted || null;
-        } catch (error) {
-            console.error('Error al eliminar usuario:', error);
-            return { error:'Error interno del servidor'};
-        }
+    validatePassword(user, plain) {
+        return bcrypt.compareSync(plain, user.password);
     }
 
-    async getByEmail(email){
-        try {
-            return await UserModel.findOne({email});
-        } catch (error) {
-            console.error('Error en la busqueda de mail', error);
-            return null;
-        }
+    async updatePassword(userId, newPlain) {
+        const hashed = bcrypt.hashSync(newPlain, SALT_ROUNDS);
+        return await this.repository.updateById(userId, { password: hashed });
     }
 
-    validatePassword(user, plainPassword){
-        return bcrypt.compareSync(plainPassword, user.password);
+    async isSamePassword(user, plain) {
+        return bcrypt.compareSync(plain, user.password);
     }
 }
-
-export default UserService;

@@ -53,8 +53,12 @@ export const updateCartProducts = async (req, res) => {
 };
 
 export const updateProductQuantity = async (req, res) => {
-  const result = await cartService.updateProductQuantity(req.params.cid, req.params.pid, req.body.quantity);
-  res.json(result);
+  const { cid, pid } = req.params;
+  const { quantity } = req.body;
+  const result = await cartService.updateProductQuantity(cid, pid, Number(quantity));
+  return result?.error
+    ? res.status(400).json(result)
+    : res.json(result);
 };
 
 export const deleteAllProductsFromCart = async (req, res) => {
